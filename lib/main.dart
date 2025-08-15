@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Login Form',
+      title: 'Simple Login Form Test',
       home: LoginPage(),
     );
   }
