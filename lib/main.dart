@@ -6,8 +6,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Supabase.initialize(
-    url: 'https://zfevptvyfekjtxtscpcq.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpmZXZwdHZ5ZmVranR4dHNjcGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzMjc0NjYsImV4cCI6MjA2ODkwMzQ2Nn0.h0VZoHUNCwiXLEL3Ba3v5a0aK-waIM-TD6RNyFeibsE',
+    url: 'https://ajlaoltqrslnvjuzmdmr.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqbGFvbHRxcnNsbnZqdXptZG1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NTgzNzIsImV4cCI6MjA3MDAzNDM3Mn0.h2JqWbLeUiq_m9xrjIMzy5g-GvK0rkcQ_6TfJueK_Rw',
   );
 
   runApp(MyApp());
@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Simple Login Form',
+      title: 'Login Form',
       home: LoginPage(),
     );
   }
