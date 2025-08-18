@@ -35,10 +35,11 @@ jobs:
       - name: Flutter Clean
         run: flutter clean
 
-      # - name: Accept Android Licenses
-      #   run: |
-      #     echo y | flutter doctor --android-licenses
+      - name: Accept Android Licenses
+        run: |
+          echo y | flutter doctor --android-licenses
 
       - name: Run PowerShell Deployment Script
         run: .\deploy.ps1
         shell: pwsh
+        working-directory: './' # Set the working directory to the repository root
