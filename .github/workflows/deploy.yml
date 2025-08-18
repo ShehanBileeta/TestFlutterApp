@@ -1,4 +1,4 @@
-name: Deploy to Windows Server
+name: Deploy Flutter Web App
 
 on:
   push:
@@ -6,12 +6,35 @@ on:
       - main
 
 jobs:
-  deploy:
-    runs-on: self-hosted
+  build_and_deploy:
+    runs-on: windows-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run deployment script
-        run: C:\MyFlutterApp\login_app\deploy.ps1
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          channel: 'stable'
+
+      # Perform a diagnostic check to ensure Flutter is set up correctly
+      - name: Flutter Doctor
+        run: flutter doctor
+
+      # Clean the project to remove any cached or old build files
+      - name: Flutter Clean
+        run: flutter clean
+
+      - name: Install Android SDK for Licenses
+        run: |
+          sdkmanager --sdk_root="C:\Users\runneradmin\AppData\Local\Android\sdk" "cmdline-tools;latest"
+
+      - name: Accept Android Licenses
+        run: |
+          echo y | flutter doctor --android-licenses
+
+      - name: Run PowerShell Deployment Script
+        run: .\deploy.ps1
+        shell: pwsh
