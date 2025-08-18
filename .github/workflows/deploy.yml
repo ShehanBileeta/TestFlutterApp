@@ -16,15 +16,14 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0'
+          flutter-version: '3.35.1'
           channel: 'stable'
 
       - name: Add Flutter & Dart to PATH
         run: |
-          echo "C:\hostedtoolcache\windows\flutter\3.19.0\x64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          echo "C:\hostedtoolcache\windows\flutter\3.19.0\x64\bin\cache\dart-sdk\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "C:\hostedtoolcache\windows\flutter\3.35.1\x64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "C:\hostedtoolcache\windows\flutter\3.35.1\x64\bin\cache\dart-sdk\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      # Add the Android SDK tools directory to the PATH so sdkmanager can be found
       - name: Add Android SDK to PATH
         run: |
           echo "C:\Users\runneradmin\AppData\Local\Android\sdk\cmdline-tools\latest\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
@@ -35,11 +34,7 @@ jobs:
       - name: Flutter Clean
         run: flutter clean
 
-      # - name: Accept Android Licenses
-      #   run: |
-      #     echo y | flutter doctor --android-licenses
-
       - name: Run PowerShell Deployment Script
         run: .\deploy.ps1
         shell: pwsh
-        working-directory: './' # Set the working directory to the repository root
+        working-directory: './'
