@@ -28,22 +28,20 @@ jobs:
       - name: Build Flutter Web App
         run: flutter build web
 
-      - name: Copy files to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "./build/web/*"
-          target: "C:/TestApp/web"
-
-      - name: Reload Nginx via SSH
+      - name: Deploy to Server via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            # Create a directory on the server for the tarball
+            mkdir -p /tmp/deploy-tarball
+            
+            # Transfer the files and extract them in one step
+            tar -C ./build/web -cz . | ssh -i ${{ secrets.SERVER_SSH_KEY }} ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} "tar -xz -C C:/TestApp/web"
+
+            # Reload Nginx after the transfer is complete
             echo "Deployment finished. Reloading Nginx..."
             Get-Process nginx -ErrorAction SilentlyContinue | Stop-Process -Force
             Start-Sleep -Seconds 2
