@@ -34,16 +34,10 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
           script: |
-            # Create a directory on the server for the tarball
-            mkdir -p /tmp/deploy-tarball
-            
-            # Transfer the files and extract them in one step
-            tar -C ./build/web -cz . | ssh -i ${{ secrets.SERVER_SSH_KEY }} ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} "tar -xz -C C:/TestApp/web"
-
-            # Reload Nginx after the transfer is complete
-            echo "Deployment finished. Reloading Nginx..."
-            Get-Process nginx -ErrorAction SilentlyContinue | Stop-Process -Force
-            Start-Sleep -Seconds 2
-            Start-Process -FilePath "C:\nginx\nginx.exe" -NoNewWindow
-            echo "Nginx reloaded. Deployment complete!"
+            echo "Starting deployment on the server..."
+            # This command will execute your deploy.ps1 script on the server.
+            # You must have the deploy.ps1 file on your server in a known location.
+            # Replace the path with the actual location of your script.
+            pwsh.exe -command "C:/path/to/your/deploy.ps1"
