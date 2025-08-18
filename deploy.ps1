@@ -1,5 +1,8 @@
 # --- REPOSITORY MANAGEMENT ---
 
+# NOTE: This line is for local execution. In GitHub Actions, the variable is set automatically.
+$env:GITHUB_WORKSPACE = "C:\MyFlutterApp\login_app"
+
 # Set the GitHub Token for authentication
 $gitToken = $env:GITHUB_TOKEN
 
