@@ -15,10 +15,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      # This is the crucial step to ensure the runner finds Flutter.
+      # It adds the Flutter SDK's bin directory to the job's PATH.
+      - name: ➕ Add Flutter to Path
+        run: |
+          echo "C:\src\flutter\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        shell: powershell
+
       # This diagnostic step will print all environment variables to the log.
       # This is crucial for debugging path or permissions issues.
       - name: 🔎 Env Diagnostic
-        run: "Get-ChildItem Env:"
+        run: Get-ChildItem Env:
         shell: powershell
 
       - name: ⚕️ Check Flutter installation and environment
