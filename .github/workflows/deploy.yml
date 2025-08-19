@@ -21,15 +21,6 @@ jobs:
       #   run: |
       #     echo "C:\src\flutter\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       #   shell: powershell
-
-      # This is the new step that automates setting the file permissions.
-      # It grants Read and Execute permissions to the NetworkService account.
-      - name: 🔐 Set Flutter Folder Permissions
-        run: |
-          # Use icacls to grant permissions to the 'Network Service' account.
-          # (OI): Object Inherit, (CI): Container Inherit, RX: Read & Execute
-          icacls "C:\src\flutter" /grant "NT AUTHORITY\NETWORK SERVICE":(OI)(CI)RX
-        shell: powershell
       
       # This diagnostic step will print all environment variables to the log.
       # This is crucial for debugging path or permissions issues.
