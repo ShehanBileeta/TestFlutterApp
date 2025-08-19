@@ -15,12 +15,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 🐦 Install Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.19.6' # Use your desired Flutter version
-          channel: 'stable'
-
       - name: 📦 Get Flutter dependencies
         run: flutter pub get
 
