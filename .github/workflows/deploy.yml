@@ -14,9 +14,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
-      # This step checks for a complete Flutter installation and configuration.
-      # The -v flag provides verbose output for better diagnostics if issues arise.
+
+      # This diagnostic step will print all environment variables to the log.
+      # This is crucial for debugging path or permissions issues.
+      - name: 🔎 Env Diagnostic
+        run: Get-ChildItem Env:
+        shell: powershell
+
       - name: ⚕️ Check Flutter installation and environment
         run: flutter doctor -v
 
@@ -32,8 +36,6 @@ jobs:
 
       - name: 🚚 Copy files to server via SCP
         # SCP is a secure way to copy files over SSH.
-        # This step assumes that OpenSSH is installed and configured on your Windows runner.
-        # Git for Windows often includes this.
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
@@ -45,8 +47,6 @@ jobs:
           Get-Item id_rsa | ForEach-Object { $_.Mode = "----------" } # Set read-only permissions
           
           # Use scp to copy the entire build/web directory to the server.
-          # The destination path needs to be the location where Nginx is configured to serve files.
-          # The Unix-style path '/c/...' is necessary for OpenSSH on Windows.
           # Ensure your server's SSH user has write permissions to this directory.
           scp -i "$env:TEMP\id_rsa" -r '.\build\web\*' ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/c/TestApp/web/
           
@@ -54,8 +54,7 @@ jobs:
           Remove-Item "$env:TEMP\id_rsa"
 
       - name: 🔄 Restart Nginx service on server via SSH
-        # This step connects to the server and restarts the Nginx service
-        # to ensure it picks up the new files.
+        # This step connects to the server and restarts the Nginx service.
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
@@ -67,9 +66,6 @@ jobs:
           Get-Item id_rsa | ForEach-Object { $_.Mode = "----------" }
           
           # Use ssh to execute a remote command.
-          # The command assumes your Nginx is running as a service.
-          # For a simple 'nginx -s reload', you might need a different setup.
-          # This command restarts a service with the name 'nginx'.
           ssh -i "$env:TEMP\id_rsa" ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'powershell.exe -c "Restart-Service nginx"'
           
           # Clean up the private key file
