@@ -18,7 +18,7 @@ jobs:
       # This diagnostic step will print all environment variables to the log.
       # This is crucial for debugging path or permissions issues.
       - name: 🔎 Env Diagnostic
-        run: Get-ChildItem Env:
+        run: "Get-ChildItem Env:"
         shell: powershell
 
       - name: ⚕️ Check Flutter installation and environment
