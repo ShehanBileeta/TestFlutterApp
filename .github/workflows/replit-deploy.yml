@@ -1,0 +1,84 @@
+name: Deploy to Replit
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.1'
+          channel: 'stable'
+
+      - name: Build Flutter Web App
+        run: flutter build web --release
+
+      - name: Deploy to Replit
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REPLIT_HOST }}
+          username: ${{ secrets.REPLIT_USERNAME }}
+          key: ${{ secrets.REPLIT_SSH_KEY }}
+          script: |
+            echo "Starting deployment to Replit..."
+            # Change to the working directory on Replit
+            cd ~
+            
+            # Remove old files from the public directory
+            rm -rf public/*
+            
+            # The rsync command to transfer files securely
+            rsync -avz --delete --exclude 'node_modules/' ./.build/web/ public/
+            
+            echo "Deployment to Replit completed!"
+name: Deploy to Replit
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.1'
+          channel: 'stable'
+
+      - name: Build Flutter Web App
+        run: flutter build web --release
+
+      - name: Deploy to Replit
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REPLIT_HOST }}
+          username: ${{ secrets.REPLIT_USERNAME }}
+          key: ${{ secrets.REPLIT_SSH_KEY }}
+          script: |
+            echo "Starting deployment to Replit..."
+            # Change to the working directory on Replit
+            cd ~
+            
+            # Remove old files from the public directory
+            rm -rf public/*
+            
+            # The rsync command to transfer files securely
+            rsync -avz --delete --exclude 'node_modules/' ./.build/web/ public/
+            
+            echo "Deployment to Replit completed!"
