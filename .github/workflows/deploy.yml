@@ -28,6 +28,12 @@ jobs:
         run: "Get-ChildItem Env:"
         shell: powershell
 
+      # New diagnostic step to check file permissions on the Flutter executable.
+      - name: 🛡️ Check Flutter file permissions
+        run: |
+          Get-Acl "C:\src\flutter\bin\flutter.bat" | Format-List
+        shell: powershell
+      
       - name: ⚕️ Check Flutter installation and environment
         run: flutter doctor -v
 
