@@ -1,96 +1,51 @@
-name: Deploy Flutter Web App to Windows Server
+name: Deploy Flutter Web App
 
 on:
   push:
     branches:
-      - main # Or your main branch name like 'master'
+      - main
 
 jobs:
-  deploy:
-    runs-on: [self-hosted, windows] # Ensure this matches your runner labels
+  build_and_deploy:
+    runs-on: windows-latest
 
     steps:
-      - name: 🔍 Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
-          fetch-depth: 0
+          flutter-version: '3.35.1'
+          channel: 'stable'
 
-      # This is the crucial step to ensure the runner finds Flutter.
-      # It adds the Flutter SDK's bin directory to the job's PATH.
-      - name: ➕ Add Flutter to Path
-        run: |
-          echo "C:\src\flutter\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        shell: powershell
+      - name: Flutter Doctor
+        run: flutter doctor
 
-      # This is the new step that automates setting the file permissions.
-      # It grants Read and Execute permissions to the NetworkService account.
-      # - name: 🔐 Set Flutter Folder Permissions
-      #   run: |
-      #     # Use icacls to grant permissions to the 'Network Service' account.
-      #     # (OI): Object Inherit, (CI): Container Inherit, RX: Read & Execute
-      #     icacls "C:\src\flutter" /grant "NT AUTHORITY\NETWORK SERVICE":(OI)(CI)RX
-      #   shell: powershell
-      
-      # This diagnostic step will print all environment variables to the log.
-      # This is crucial for debugging path or permissions issues.
-      - name: 🔎 Env Diagnostic
-        run: "Get-ChildItem Env:"
-        shell: powershell
+      - name: Flutter Clean
+        run: flutter clean
 
-      # New diagnostic step to check file permissions on the Flutter executable.
-      - name: 🛡️ Check Flutter file permissions
-        run: |
-          Get-Acl "C:\src\flutter\bin\flutter.bat" | Format-List
-        shell: powershell
-      
-      - name: ⚕️ Check Flutter installation and environment
-        run: C:\src\flutter\bin\flutter.bat doctor -v
-        shell: cmd
+      - name: Build Flutter Web App
+        run: flutter build web
 
-      - name: 📦 Get Flutter dependencies
-        run: flutter pub get
-        shell: cmd
+      - name: Copy files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "./build/web/*"
+          target: "C:/TestApp/web"
 
-      - name: ⏱️ Wait for dependencies to install
-        run: Start-Sleep -Seconds 5
-        shell: powershell
-
-      - name: 🌐 Build Flutter web app
-        run: flutter build web --release
-
-      - name: 🚚 Copy files to server via SCP
-        # SCP is a secure way to copy files over SSH.
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          # Save the private key to a file with correct permissions
-          echo "$env:SSH_PRIVATE_KEY" > "$env:TEMP\id_rsa"
-          Set-Location -Path $env:TEMP
-          Get-Item id_rsa | ForEach-Object { $_.Mode = "----------" } # Set read-only permissions
-          
-          # Use scp to copy the entire build/web directory to the server.
-          # Ensure your server's SSH user has write permissions to this directory.
-          scp -i "$env:TEMP\id_rsa" -r '.\build\web\*' ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/c/TestApp/web/
-          
-          # Clean up the private key file
-          Remove-Item "$env:TEMP\id_rsa"
-
-      - name: 🔄 Restart Nginx service on server via SSH
-        # This step connects to the server and restarts the Nginx service.
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          # Save the private key to a file with correct permissions
-          echo "$env:SSH_PRIVATE_KEY" > "$env:TEMP\id_rsa"
-          Set-Location -Path $env:TEMP
-          Get-Item id_rsa | ForEach-Object { $_.Mode = "----------" }
-          
-          # Use ssh to execute a remote command.
-          ssh -i "$env:TEMP\id_rsa" ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'powershell.exe -c "Restart-Service nginx"'
-          
-          # Clean up the private key file
-          Remove-Item "$env:TEMP\id_rsa"
+      - name: Reload Nginx via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            echo "Deployment finished. Reloading Nginx..."
+            Get-Process nginx -ErrorAction SilentlyContinue | Stop-Process -Force
+            Start-Sleep -Seconds 2
+            Start-Process -FilePath "C:\nginx\nginx.exe" -NoNewWindow
+            echo "Nginx reloaded. Deployment complete!"
