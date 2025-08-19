@@ -14,14 +14,18 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      # This temporary step checks if the 'flutter' command is accessible
-      # and shows the installed version.
-      - name: ⚕️ Check Flutter installation
-        run: flutter --version
+      
+      # This step checks for a complete Flutter installation and configuration.
+      # The -v flag provides verbose output for better diagnostics if issues arise.
+      - name: ⚕️ Check Flutter installation and environment
+        run: flutter doctor -v
 
       - name: 📦 Get Flutter dependencies
         run: flutter pub get
+
+      - name: ⏱️ Wait for dependencies to install
+        run: Start-Sleep -Seconds 5
+        shell: powershell
 
       - name: 🌐 Build Flutter web app
         run: flutter build web --release
