@@ -15,6 +15,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      # This temporary step checks if the 'flutter' command is accessible
+      # and shows the installed version.
+      - name: ⚕️ Check Flutter installation
+        run: flutter --version
+
       - name: 📦 Get Flutter dependencies
         run: flutter pub get
 
