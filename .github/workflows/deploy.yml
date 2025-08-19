@@ -1,43 +1,73 @@
-name: Deploy Flutter Web App
+name: Deploy Flutter Web App to Windows Server
 
 on:
   push:
     branches:
-      - main
+      - main # Or your main branch name like 'master'
 
 jobs:
-  build_and_deploy:
-    runs-on: ubuntu-latest
+  deploy:
+    runs-on: [self-hosted, windows] # Ensure this matches your runner labels
 
     steps:
-      - name: Checkout repository
+      - name: 🔍 Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Setup Flutter
+      - name: 🐦 Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.1'
+          flutter-version: '3.19.6' # Use your desired Flutter version
           channel: 'stable'
 
-      - name: Flutter Doctor
-        run: flutter doctor
+      - name: 📦 Get Flutter dependencies
+        run: flutter pub get
 
-      - name: Flutter Clean
-        run: flutter clean
+      - name: 🌐 Build Flutter web app
+        run: flutter build web --release
 
-      - name: Build Flutter Web App
-        run: flutter build web
+      - name: 🚚 Copy files to server via SCP
+        # SCP is a secure way to copy files over SSH.
+        # This step assumes that OpenSSH is installed and configured on your Windows runner.
+        # Git for Windows often includes this.
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          # Save the private key to a file with correct permissions
+          echo "$env:SSH_PRIVATE_KEY" > "$env:TEMP\id_rsa"
+          Set-Location -Path $env:TEMP
+          Get-Item id_rsa | ForEach-Object { $_.Mode = "----------" } # Set read-only permissions
+          
+          # Use scp to copy the entire build/web directory to the server.
+          # The destination path needs to be the location where Nginx is configured to serve files.
+          # The Unix-style path '/c/...' is necessary for OpenSSH on Windows.
+          # Ensure your server's SSH user has write permissions to this directory.
+          scp -i "$env:TEMP\id_rsa" -r '.\build\web\*' ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/c/TestApp/web/
+          
+          # Clean up the private key file
+          Remove-Item "$env:TEMP\id_rsa"
 
-      - name: Deploy to Server via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: 22
-          script: |
-            echo "Starting deployment on the server..."
-            # This command will execute your deploy.ps1 script on the server.
-            # You must have the deploy.ps1 file on your server in a known location.
-            # Replace the path with the actual location of your script.
-            pwsh.exe -command "C:/path/to/your/deploy.ps1"
+      - name: 🔄 Restart Nginx service on server via SSH
+        # This step connects to the server and restarts the Nginx service
+        # to ensure it picks up the new files.
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          # Save the private key to a file with correct permissions
+          echo "$env:SSH_PRIVATE_KEY" > "$env:TEMP\id_rsa"
+          Set-Location -Path $env:TEMP
+          Get-Item id_rsa | ForEach-Object { $_.Mode = "----------" }
+          
+          # Use ssh to execute a remote command.
+          # The command assumes your Nginx is running as a service.
+          # For a simple 'nginx -s reload', you might need a different setup.
+          # This command restarts a service with the name 'nginx'.
+          ssh -i "$env:TEMP\id_rsa" ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'powershell.exe -c "Restart-Service nginx"'
+          
+          # Clean up the private key file
+          Remove-Item "$env:TEMP\id_rsa"
