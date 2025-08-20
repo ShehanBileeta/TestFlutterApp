@@ -1,51 +1,17 @@
-name: Deploy Flutter Web App
+name: Deploy to Windows Server
 
 on:
   push:
     branches:
-      - test-branch
+      - main
 
 jobs:
-  build_and_deploy:
-    runs-on: ubuntu-latest
+  deploy:
+    runs-on: self-hosted
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.35.1'
-          channel: 'stable'
-
-      - name: Flutter Doctor
-        run: flutter doctor
-
-      - name: Flutter Clean
-        run: flutter clean
-
-      - name: Build Flutter Web App
-        run: flutter build web --release
-
-      - name: Copy files to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: ${{ secrets.SERVER_PORT }}  # Add your public port here
-          source: "./build/web/*"
-          target: "/var/www/html/your-site" # Example: Public web directory on Ubuntu
-
-      - name: Reload Nginx via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: ${{ secrets.SERVER_PORT }} # Add your public port here
-          script: |
-            echo "Deployment finished. Reloading Nginx..."
-            sudo systemctl restart nginx
-            echo "Nginx reloaded. Deployment complete!"
+      - name: Run deployment script
+        run: C:\MyFlutterApp\login_app\deploy.ps1
