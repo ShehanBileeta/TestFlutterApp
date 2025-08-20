@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Login Form Test 14',
+      title: 'Login Form',
       home: LoginPage(),
     );
   }
@@ -92,7 +92,7 @@ void _showErrorDialog(String message) {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Login Form')),
+      appBar: AppBar(title: Text('Login Form Test')),
       body: Padding(
         padding: EdgeInsets.all(20),
         child: Center(
