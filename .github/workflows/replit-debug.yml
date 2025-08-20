@@ -1,0 +1,14 @@
+name: Debug Secrets
+
+# This allows you to run the workflow manually from the Actions tab in GitHub.
+on:
+  workflow_dispatch:
+
+jobs:
+  debug_secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show Replit Hostname
+        run: |
+          echo "The hostname being used is: ${{ secrets.REPLIT_HOST }}"
+
