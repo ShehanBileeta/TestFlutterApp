@@ -13,11 +13,27 @@ $gitToken = $env:GITHUB_TOKEN
 Write-Host "Navigating to the project directory..."
 cd $env:GITHUB_WORKSPACE
 
-# This is the crucial step to fix the 'Permission denied' error.
-# It grants read and write permissions to the 'Network Service' account on the project directory.
+# This is the crucial step to fix the 'Permission denied' error by using native PowerShell cmdlets.
 Write-Host "Setting folder permissions for the GitHub Actions runner..."
-icacls "$env:GITHUB_WORKSPACE" /grant "NT AUTHORITY\NETWORK SERVICE":(OI)(CI)F
-Write-Host "Permissions set successfully."
+try {
+    # Get the access control list (ACL) for the directory
+    $acl = Get-Acl -Path "$env:GITHUB_WORKSPACE"
+
+    # Define a new access rule for the Network Service account
+    $rule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+        "NT AUTHORITY\NETWORK SERVICE", "FullControl", "ContainerInherit, ObjectInherit", "None", "Allow"
+    )
+
+    # Add the new rule to the ACL
+    $acl.AddAccessRule($rule)
+
+    # Apply the modified ACL to the directory
+    Set-Acl -Path "$env:GITHUB_WORKSPACE" -AclObject $acl
+    Write-Host "Permissions set successfully using Set-Acl."
+}
+catch {
+    Write-Host "An error occurred while setting permissions: $_"
+}
 
 # Forcefully stop any processes that might be holding file locks from previous builds
 Write-Host "Stopping any lingering build processes..."
